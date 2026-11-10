@@ -67,7 +67,7 @@ sed -n '/resources = {/,/},/p' /etc/openqse/qfw-slurm/resources.lua
 
 > Here are the two MQV QPUs, `sc26-mqv-maqcs` and `sc26-mqv-eqe1`, which go to MQV's MQSS. Their service is always `shim-` plus the QPU name. In my job script I ask for one of them, or for both, as a comma-separated list. In my program I create one Qiskit backend per QPU, by its service name.
 
-### 1.4 My files 
+### 1.4 User's Files 
 
 > I have three small programs, one per case, and a job script for each.
 
@@ -123,7 +123,7 @@ Repeat until all three are finished (`COMPLETED`). The EQE1 job takes about a mi
 
 > While they run: Slurm reserved the QPUs for my jobs, my programs sent the circuits to openQSE's QPM services, and those services are now waiting for MQSS.
 
-### 1.7 My results
+### 1.7 Results
 
 Lists the output files of the jobs, one per job, named after the job number:
 ```bash
