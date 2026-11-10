@@ -1,0 +1,29 @@
+<section id="proof" data-transition="fade" style="background:#f6f7f9;color:#14213d;font-family:'IBM Plex Sans', Arial, sans-serif;padding:112px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<h2 style="font-size:64px;font-weight:700;line-height:1.1;color:#14213d">How a user runs it, and what works today</h2>
+<div style="display:flex;flex-direction:row;gap:56px;align-items:start">
+<div style="width:900px;display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;color:#6b7280">The job script: pick the machine by its QPU name</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:26px;line-height:1.5;background:#14213d;color:#e6ecf5;padding:24px 32px;border-radius:12px">#SBATCH --qpu=sc26-mqv-eqe1</p>
+<p style="font-size:24px;color:#6b7280">The code: plain Qiskit plus the openQSE backend</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:26px;line-height:1.5;background:#14213d;color:#e6ecf5;padding:24px 32px;border-radius:12px">qc = QuantumCircuit(3)<br>qc.h(0); qc.cx(0, 1); qc.cx(1, 2)<br>qc.measure_all()<br>eqe1 = QFwBackend(provider="shim",<br>  service_id="shim-sc26-mqv-eqe1")<br>job = eqe1.run(qc, shots=100)<br>print(job.result().get_counts())</p>
+<p style="font-family:'JetBrains Mono', 'Courier New', monospace;font-size:26px;line-height:1.5;background:#eef3fd;color:#14213d;border:2px solid #1d4ed8;padding:16px 32px;border-radius:12px">EQE1 counts: {'000': [__], '111': [__]}</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:32px">
+<h3 style="font-size:36px;font-weight:700;color:#1d4ed8">Through MQV, as of [2026-11-10]</h3>
+<table style="font-family:'IBM Plex Sans', Arial, sans-serif;font-size:26px;color:#14213d">
+<tr><th style="width:52%;text-align:left">Machine</th><th style="width:48%;text-align:left">Status</th></tr>
+<tr><td>planqc MAQCS (simulator)</td><td>Works (testbed, 2026-11-04)</td></tr>
+<tr><td>LRZ IQM (EQE1)</td><td>[Works / in progress]</td></tr>
+<tr><td>AWS Braket IQM</td><td>In progress</td></tr>
+</table>
+<div style="display:flex;flex-direction:row;gap:28px;align-items:center">
+<div style="width:200px;height:200px;border:3px dashed #9db4e8;background:#ffffff;display:flex;align-items:center;justify-content:center">
+<p style="font-size:24px;color:#6b7280;text-align:center">[QR code]</p>
+</div>
+<p style="font-size:26px;line-height:1.4;color:#4a5568">The device on PyPI:<br><span style="color:#14213d">pypi.org/project/<br>mqss-qdmi-mqv</span></p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#6b7280">Munich Quantum Valley · openQSE DOE booth dry run · 2026-11-11</p>
+<aside>About 90 seconds, then 30 seconds of outlook. This is all a user writes. In the job script, one line picks the machine: the QPU name sc26-mqv-eqe1. In the code, plain Qiskit, and one openQSE backend whose service is shim- plus the QPU name. Nothing here says MQV or MQSS: change the QPU name and the same job goes to another machine. [Show the video here if we have one: sbatch, squeue, the counts.] On the right, what works through MQV today, stated honestly: MAQCS works from the testbed; LRZ's IQM [works / is being connected in MQSS]; AWS is in progress. The QR code leads to the device on PyPI. Outlook: each new machine behind MQSS becomes one more QPU name.</aside>
+</section>

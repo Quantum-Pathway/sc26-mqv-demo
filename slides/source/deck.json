@@ -1,0 +1,16 @@
+{
+  "v": 4,
+  "createdOnFiles": {"v": 1, "at": "2026-11-09T14:40:00Z"},
+  "lists": "css",
+  "title": "MQV DOE dry run",
+  "order": ["fits", "proof"],
+  "sections": {
+    "s1": {"description": "Where MQV fits in the openQSE stack: one QDMI device, several quantum computers behind MQSS.", "start": "fits"},
+    "s2": {"description": "How a user runs it, and what works today.", "start": "proof"}
+  },
+  "faces": {
+    "ibm-plex-sans": {"family": "IBM Plex Sans", "href": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap"},
+    "jetbrains-mono": {"family": "JetBrains Mono", "href": "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap"}
+  },
+  "designSystems": []
+}

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" width="200" height="250">
+  <!-- Generic dilution-refrigerator "chandelier" (line art, not a vendor image) -->
+  <rect x="0" y="0" width="200" height="250" fill="#ffffff"/>
+  <g stroke="#222222" stroke-width="2" fill="#ffffff">
+    <!-- rods between plates -->
+    <g stroke-width="2.5">
+      <line x1="30" y1="18" x2="35" y2="64"/><line x1="170" y1="18" x2="165" y2="64"/>
+      <line x1="38" y1="72" x2="43" y2="112"/><line x1="162" y1="72" x2="157" y2="112"/>
+      <line x1="47" y1="120" x2="52" y2="152"/><line x1="153" y1="120" x2="148" y2="152"/>
+      <line x1="56" y1="160" x2="62" y2="186"/><line x1="144" y1="160" x2="138" y2="186"/>
+    </g>
+    <!-- cables -->
+    <g stroke-width="1.2">
+      <line x1="60" y1="18" x2="62" y2="186"/><line x1="75" y1="18" x2="76" y2="186"/>
+      <line x1="90" y1="18" x2="90" y2="186"/><line x1="110" y1="18" x2="110" y2="186"/>
+      <line x1="125" y1="18" x2="124" y2="186"/><line x1="140" y1="18" x2="138" y2="186"/>
+    </g>
+    <!-- plates, each with a hatched rim -->
+    <g>
+      <rect x="15" y="8" width="170" height="12" rx="2"/>
+      <rect x="25" y="62" width="150" height="12" rx="2"/>
+      <rect x="35" y="110" width="130" height="12" rx="2"/>
+      <rect x="45" y="150" width="110" height="12" rx="2"/>
+      <rect x="55" y="184" width="90" height="12" rx="2"/>
+    </g>
+    <g stroke-width="1">
+      <path d="M25 8v12M35 8v12M45 8v12M55 8v12M65 8v12M75 8v12M85 8v12M95 8v12M105 8v12M115 8v12M125 8v12M135 8v12M145 8v12M155 8v12M165 8v12M175 8v12"/>
+      <path d="M35 62v12M45 62v12M55 62v12M65 62v12M75 62v12M85 62v12M95 62v12M105 62v12M115 62v12M125 62v12M135 62v12M145 62v12M155 62v12M165 62v12"/>
+      <path d="M45 110v12M55 110v12M65 110v12M75 110v12M85 110v12M95 110v12M105 110v12M115 110v12M125 110v12M135 110v12M145 110v12M155 110v12"/>
+      <path d="M55 150v12M65 150v12M75 150v12M85 150v12M95 150v12M105 150v12M115 150v12M125 150v12M135 150v12M145 150v12"/>
+      <path d="M65 184v12M75 184v12M85 184v12M95 184v12M105 184v12M115 184v12M125 184v12M135 184v12"/>
+    </g>
+    <!-- mixing-chamber stage and qubit package -->
+    <rect x="72" y="196" width="56" height="22" rx="2"/>
+    <path d="M72 203h56M72 210h56" stroke-width="1"/>
+    <path d="M78 218v14a6 6 0 0 0 12 0v-14M94 218v14a6 6 0 0 0 12 0v-14M110 218v14a6 6 0 0 0 12 0v-14" fill="none"/>
+  </g>
+</svg>

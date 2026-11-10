@@ -1,0 +1,20 @@
+<section id="fits" data-transition="fade" style="background:#f6f7f9;color:#14213d;font-family:'IBM Plex Sans', Arial, sans-serif;padding:128px;display:flex;flex-direction:column">
+<img src="/_blob/55b14c9cabff442f6ee78d1bf6b8ab05" alt="openQSE software stack reference implementation, layer by layer: applications (SQD and VQE workflows), system orchestration (StreamFlow, Slurm and others), application middleware (Qiskit, MQT Core, QPM, QRI with QDMI). Framed in blue as what MQV delivers: the QDMI device, MQV's MQSS, and the quantum compute behind it: IQM at LRZ through MQSS and QDMI, and IQM at AWS through Braket." style="position:absolute;left:96px;top:56px;width:784px;height:966px;object-fit:contain;background:#ffffff;border-radius:12px">
+<div style="position:absolute;left:960px;top:128px;width:832px;display:flex;flex-direction:column;gap:48px">
+<h2 style="font-size:64px;font-weight:700;line-height:1.1;color:#14213d">MQV: one QDMI device, several quantum computers</h2>
+<div style="display:flex;flex-direction:column;gap:10px">
+<h3 style="font-size:36px;font-weight:700;color:#1d4ed8">Standard</h3>
+<p style="font-size:28px;line-height:1.4;color:#4a5568">QDMI, loaded through MQT Core. openQSE only needs configuration.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<h3 style="font-size:36px;font-weight:700;color:#1d4ed8">Installable</h3>
+<p style="font-size:28px;line-height:1.4;color:#4a5568"><span style="color:#14213d">pip install mqss-qdmi-mqv</span><br>Published on PyPI.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<h3 style="font-size:36px;font-weight:700;color:#1d4ed8">Federated</h3>
+<p style="font-size:28px;line-height:1.4;color:#4a5568">Behind one device, MQSS reaches IQM at LRZ and IQM on AWS. Each machine is one QPU name; no new code for users.</p>
+</div>
+</div>
+<p style="position:absolute;left:960px;bottom:64px;width:832px;font-size:24px;color:#6b7280">Munich Quantum Valley · openQSE DOE booth dry run · 2026-11-11</p>
+<aside>About 60 seconds. ORNL just showed the openQSE stack; this is the same diagram, with MQV's part framed in blue. Everything above the blue frame is the openQSE reference implementation: VQE through StreamFlow and Slurm, Qiskit, QPM and QRI. At the QDMI line, openQSE loads one device: ours, mqss-qdmi-mqv, through MQT Core's QDMI driver. Behind that one device sits MQSS, the Munich Quantum Software Stack, which federates several machines: IQM at LRZ, and IQM on AWS through Braket. Three points: it is a standard interface, it installs with pip, and a new machine behind MQSS is just a new QPU name for users.</aside>
+</section>
