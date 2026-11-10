@@ -159,7 +159,7 @@ Nothing to clean up. The token isn't stored anywhere except in the two running s
 
 ---
 
-## Appendix: Preparation for the presenter (30 minutes before, not shown)
+## Appendix: Preparation for the presenter (few minutes before the demo)
 
 ### A.1 MAQCS and EQE1 are online
 
