@@ -15,8 +15,6 @@ flowchart LR
   mqss --> aws["SV1 at AWS"]
 ```
 
-The results return the same way to the user.
-
 > openQSE doesn't know MQSS. It only loads our QDMI device through MQT Core, like the IQM and AWS devices. Our device turns each job into an MQP-API call.
 
 ## What the site offers
@@ -43,35 +41,18 @@ eqe1 = QFwBackend(provider="shim", service_id="shim-sc26-mqv-eqe1")
 
 ## Part 1: The demo
 
-### 1.1 Where we are 
+### 1.1 Where we are
 
-> This is openQSE's reference testbed, QFw-SLURM-Cluster, running on an MQV VM: a Slurm cluster with compute nodes and QFw's service nodes. I'm now a user on this cluster, `user-a`. The site offers three MQV resources through MQSS: MAQCS, EQE1 and AWS.
+> This is openQSE's reference testbed, QFw-SLURM-Cluster, on an MQV VM. I'm the user `user-a`. The site offers three MQV resources: MAQCS, EQE1 and AWS.
 
 ### 1.2 Log in to the cluster
 
-
-Opens a shell as `user-a` on the testbed's login node, in the folder with my files:
+Opens a shell as `user-a`, in the folder with my files (on a real cluster: `ssh <login node>`):
 ```bash
 docker exec -it -u user-a -w /workspace/home/user-a/demo slurmctld bash -l
 ```
 
-On a real cluster this is `ssh <login node>`. The testbed has no separate login node: the `slurmctld` container (Slurm's controller) also has the Slurm user commands and the test users, so it plays that role. From here until step 1.8, everything is typed as `user-a`, exactly as on any HPC cluster.
-
-### 1.3 What I can choose as a user 
-
-> Users don't choose a device or an API endpoint. They choose a **QPU name** that the site offers, like I choose a partition. The site decides what's behind each name.
-
-Prints the site's list of QPU names. Each line is `QPU name = QPM service`:
-```bash
-sed -n '/resources = {/,/},/p' /etc/openqse/qfw-slurm/resources.lua
-```
-(On a real cluster, the site's documentation lists its QPU names.)
-
-> Here are the three MQV QPUs, `sc26-mqv-maqcs`, `sc26-mqv-eqe1` and `sc26-mqv-aws`, which go to MQV's MQSS. Their service is always `shim-` plus the QPU name. In my job script I ask for one of them. In my program I create a Qiskit backend for it, by its service name.
-
-### 1.4 User's Files 
-
-> I have three small programs, one per QPU, and a job script for each.
+### 1.3 User's files
 
 Lists my files:
 ```bash
@@ -83,74 +64,63 @@ Shows the program for MAQCS:
 cat ghz_maqcs.py
 ```
 
-> Plain Qiskit: a GHZ circuit on three qubits. The only openQSE line is the backend: `QFwBackend` for the service `shim-sc26-mqv-maqcs`. Nothing in here says MQV or MQSS.
+> Plain Qiskit: a GHZ circuit on three qubits. The only openQSE line is the backend for the service `shim-sc26-mqv-maqcs`.
 
 Shows the job script for MAQCS:
 ```bash
 cat ghz_maqcs.sbatch
 ```
 
-> The only quantum-specific lines are `--qpu`, the QPU name, and the limits below it. Slurm uses them to reserve the QPU before my job starts. The programs and job scripts for EQE1 and AWS differ only in the QPU name.
+> The QPU is picked with `--qpu`.
 
-### 1.5 Submit the three jobs 
+### 1.4 Submit the three jobs
 
-> Now I submit them like any HPC job.
-
-Submits the three job scripts. Slurm answers each with `Submitted batch job <N>`:
 ```bash
 sbatch ghz_maqcs.sbatch
 sbatch ghz_eqe1.sbatch
 sbatch ghz_aws.sbatch
 ```
 
-### 1.6 Watch them run 
+### 1.5 Watch them run
 
-Shows my jobs in the queue:
 ```bash
 squeue -u user-a
 ```
 
-Shows my jobs of the last 15 minutes with their state, also the finished ones:
 ```bash
 sacct -X -S now-15minutes -o JobID,JobName%16,State,Elapsed
 ```
-Repeat until all three are finished (`COMPLETED`). MAQCS and AWS take about 20 seconds; EQE1 takes one to two minutes, because it runs on the real machine at LRZ.
+Repeat until all three are `COMPLETED`. EQE1 takes one to two minutes.
 
-> While they run: Slurm reserved the QPUs for my jobs, my programs sent the circuits to openQSE's QPM services, and those services are now waiting for MQSS.
+### 1.6 Results
 
-### 1.7 Results
-
-Lists the output files of the jobs, one per job, named after the job number:
 ```bash
 ls slurm-*.out
 ```
 
-Shows the output of one job; replace `<N>` with its job number:
+Replace `<N>` with the job number:
 ```bash
 cat slurm-<N>.out
 ```
 
-The file ends with the program's result, for example:
+The file ends with the result, for example:
 ```
 EQE1 counts: {'000': 50, '001': 5, '101': 2, '110': 1, '111': 42}
 ```
 
-> A GHZ state gives 000 and 111, about half each. The real machine, and planqc's simulator, which models noise, also give a few other results; AWS's SV1 simulates without noise and gives only 000 and 111.
+> A GHZ state gives mostly 000 and 111.
 
-### 1.8 Log out (a few seconds)
+### 1.7 Log out
 
-Leaves the user's shell, back to the VM:
 ```bash
 exit
 ```
-
-> That's everything a user does and sees.
 
 
 
 ## After the demo
 
-Nothing to clean up. The token isn't stored anywhere except in the three running services, and they can keep running. The `demo/` folder can stay for the next time. Close both SSH sessions.
+Nothing to clean up. Close the SSH session.
 
 ---
 
@@ -369,9 +339,9 @@ docker exec -u user-a slurmctld ls -l /workspace/home/user-a/demo
 
 ### A.7 Dry run
 
-Run Part 1, steps 1.2 and 1.5 to 1.8, once. All three jobs must show their counts. A job submitted right after a service was (re)started can hang in `PENDING`; the dry run catches that before the demo.
+Run Part 1, steps 1.2 and 1.4 to 1.7, once. All three jobs must show their counts. A job submitted right after a service was (re)started can hang in `PENDING`; the dry run catches that before the demo.
 
-If a job ends with `QDMI job.check() failed: Checking job status: A fatal error` in its `slurm-<N>.out`, submit it again. The device gave up after one status request to the MQP-API came back empty, while the job itself completed at MQV (Slurm job 44 / MQP job 170, 2026-11-11). A device fix is planned.
+If a job ends with `Checking job status: A fatal error` in its `slurm-<N>.out`, submit it again.
 
 Then delete the dry run's output files, so the folder looks clean for the demo:
 ```bash
