@@ -1,6 +1,6 @@
-# Demo: a user picks MAQCS, EQE1 or both
+# Demo: a user picks MAQCS, EQE1 or AWS
 
-For the demo let's suppose we have an openQSE user on an HPC cluster. The site offers two MQV resources as QPU names. The user runs one program on MAQCS, one on EQE1, and one on both, through MQV's MQSS.
+For the demo let's suppose we have an openQSE user on an HPC cluster. The site offers three MQV resources as QPU names. The user runs one program on MAQCS, one on EQE1 and one on AWS, through MQV's MQSS.
 
 
 ## The path in one picture
@@ -10,8 +10,9 @@ flowchart LR
   user["User"] -- "job script with a QPU name" --> openqse["openQSE"]
   openqse -- "QDMI" --> device["MQV QDMI device"]
   device -- "MQP-API" --> mqss["MQV's MQSS"]
-  mqss --> maqcs["MAQCS at MQP"]
+  mqss --> maqcs["MAQCS at planqc"]
   mqss --> eqe1["EQE1 at LRZ"]
+  mqss --> aws["SV1 at AWS"]
 ```
 
 The results return the same way to the user.
@@ -36,6 +37,7 @@ eqe1 = QFwBackend(provider="shim", service_id="shim-sc26-mqv-eqe1")
 |---|---|---|
 | `sc26-mqv-maqcs` | `shim-sc26-mqv-maqcs` | MAQCS, a simulator from planqc |
 | `sc26-mqv-eqe1` | `shim-sc26-mqv-eqe1` | EQE1, an IQM quantum computer at LRZ |
+| `sc26-mqv-aws` | `shim-sc26-mqv-aws` | SV1, a simulator at Amazon Web Services |
 
 
 
@@ -43,7 +45,7 @@ eqe1 = QFwBackend(provider="shim", service_id="shim-sc26-mqv-eqe1")
 
 ### 1.1 Where we are 
 
-> This is openQSE's reference testbed, QFw-SLURM-Cluster, running on an MQV VM: a Slurm cluster with compute nodes and QFw's service nodes. I'm now a user on this cluster, `user-a`. The site offers two MQV resources through MQSS: MAQCS and EQE1.
+> This is openQSE's reference testbed, QFw-SLURM-Cluster, running on an MQV VM: a Slurm cluster with compute nodes and QFw's service nodes. I'm now a user on this cluster, `user-a`. The site offers three MQV resources through MQSS: MAQCS, EQE1 and AWS.
 
 ### 1.2 Log in to the cluster
 
@@ -65,11 +67,11 @@ sed -n '/resources = {/,/},/p' /etc/openqse/qfw-slurm/resources.lua
 ```
 (On a real cluster, the site's documentation lists its QPU names.)
 
-> Here are the two MQV QPUs, `sc26-mqv-maqcs` and `sc26-mqv-eqe1`, which go to MQV's MQSS. Their service is always `shim-` plus the QPU name. In my job script I ask for one of them, or for both, as a comma-separated list. In my program I create one Qiskit backend per QPU, by its service name.
+> Here are the three MQV QPUs, `sc26-mqv-maqcs`, `sc26-mqv-eqe1` and `sc26-mqv-aws`, which go to MQV's MQSS. Their service is always `shim-` plus the QPU name. In my job script I ask for one of them. In my program I create a Qiskit backend for it, by its service name.
 
 ### 1.4 User's Files 
 
-> I have three small programs, one per case, and a job script for each.
+> I have three small programs, one per QPU, and a job script for each.
 
 Lists my files:
 ```bash
@@ -83,19 +85,12 @@ cat ghz_maqcs.py
 
 > Plain Qiskit: a GHZ circuit on three qubits. The only openQSE line is the backend: `QFwBackend` for the service `shim-sc26-mqv-maqcs`. Nothing in here says MQV or MQSS.
 
-Shows the program that uses both:
+Shows the job script for MAQCS:
 ```bash
-cat ghz_both.py
+cat ghz_maqcs.sbatch
 ```
 
-> With two QPUs, I create two backends, one per service, and run the same circuit on each.
-
-Shows the job script for both:
-```bash
-cat ghz_both.sbatch
-```
-
-> The only quantum-specific lines are `--qpu`, here both QPU names, and the limits below it. Slurm uses them to reserve the QPUs before my job starts.
+> The only quantum-specific lines are `--qpu`, the QPU name, and the limits below it. Slurm uses them to reserve the QPU before my job starts. The programs and job scripts for EQE1 and AWS differ only in the QPU name.
 
 ### 1.5 Submit the three jobs 
 
@@ -105,7 +100,7 @@ Submits the three job scripts. Slurm answers each with `Submitted batch job <N>`
 ```bash
 sbatch ghz_maqcs.sbatch
 sbatch ghz_eqe1.sbatch
-sbatch ghz_both.sbatch
+sbatch ghz_aws.sbatch
 ```
 
 ### 1.6 Watch them run 
@@ -115,11 +110,11 @@ Shows my jobs in the queue:
 squeue -u user-a
 ```
 
-Shows my jobs of today with their state, also the finished ones:
+Shows my jobs of the last 15 minutes with their state, also the finished ones:
 ```bash
-sacct -X -o JobID,JobName%16,State,Elapsed
+sacct -X -S now-15minutes -o JobID,JobName%16,State,Elapsed
 ```
-Repeat until all three are finished (`COMPLETED`). The EQE1 job takes about a minute, because it runs on the real machine at LRZ.
+Repeat until all three are finished (`COMPLETED`). MAQCS and AWS take about 20 seconds; EQE1 takes one to two minutes, because it runs on the real machine at LRZ.
 
 > While they run: Slurm reserved the QPUs for my jobs, my programs sent the circuits to openQSE's QPM services, and those services are now waiting for MQSS.
 
@@ -137,10 +132,10 @@ cat slurm-<N>.out
 
 The file ends with the program's result, for example:
 ```
-EQE1 counts: {'000': 51, '011': 2, '101': 2, '110': 9, '111': 36}
+EQE1 counts: {'000': 50, '001': 5, '101': 2, '110': 1, '111': 42}
 ```
 
-> A GHZ state gives 000 and 111, about half each; a real machine also gives a few other results.
+> A GHZ state gives 000 and 111, about half each. The real machine, and planqc's simulator, which models noise, also give a few other results; AWS's SV1 simulates without noise and gives only 000 and 111.
 
 ### 1.8 Log out (a few seconds)
 
@@ -155,18 +150,19 @@ exit
 
 ## After the demo
 
-Nothing to clean up. The token isn't stored anywhere except in the two running services, and they can keep running. The `demo/` folder can stay for the next time. Close both SSH sessions.
+Nothing to clean up. The token isn't stored anywhere except in the three running services, and they can keep running. The `demo/` folder can stay for the next time. Close both SSH sessions.
 
 ---
 
 ## Appendix: Preparation for the presenter (few minutes before the demo)
 
-### A.1 MAQCS and EQE1 are online
+### A.1 MAQCS, EQE1 and AWS are online
 
-In the portal, under *Available System Resources*, check **MAQCS** and **EQE1**: both `Online`.
+In the portal, under *Available System Resources*, check **MAQCS**, **EQE1** and **AWS**: all `Online`.
 
-`Online` doesn't guarantee that jobs run. Two hours before the demo, send one test job to each resource with the MQSS Qiskit adapter, for example a Bell circuit:
+`Online` doesn't guarantee that jobs run. Two hours before the demo, send one test job to each resource, for example a Bell circuit.
 
+MAQCS and EQE1, with the MQSS Qiskit adapter:
 ```python
 import os
 
@@ -178,12 +174,34 @@ circuit = QuantumCircuit(2)
 circuit.h(0)
 circuit.cx(0, 1)
 circuit.measure_all()
-for resource in ("EQE1", "MAQCS"):
+for resource in ("MAQCS", "EQE1"):
     job = adapter.get_backend(resource).run(circuit, shots=100, no_modify=True, queued=True)
     print(resource, job.client.wait_for_job_result(job.job_id(), job.job_request).counts)
 ```
 
-Both must complete. If one is cancelled, contact the MQSS team with the job number, and show that resource with the results of the dry run (A.7).
+AWS, with the MQSS Python client: SV1 cancels what the adapter sends from a Qiskit circuit (`include`, `cx`), so the program is sent as OpenQASM 3 text without `include` and with `cnot`:
+```python
+import os
+
+from mqss_client.job import CircuitJobRequest
+from mqss_client.mqss_client import MQSSClient
+
+program = """OPENQASM 3.0;
+qubit[2] q;
+bit[2] c;
+h q[0];
+cnot q[0], q[1];
+c[0] = measure q[0];
+c[1] = measure q[1];
+"""
+client = MQSSClient(token=os.environ["MQSS_TOKEN"], base_url="https://test.quantumpathway.eu:4000")
+request = CircuitJobRequest(circuits=str([program]), circuit_format="qasm3", resource_name="AWS",
+                            shots=100, no_modify=True, queued=False)
+request.uuid = client.submit_job(request)
+print("AWS", client.wait_for_job_result(request.uuid, request).counts)
+```
+
+All three must complete. If one is cancelled, contact the MQSS team with the job number, and show that resource with the results of the dry run (A.7).
 
 ### A.2 The containers are up
 
@@ -193,15 +211,15 @@ docker ps --format '{{.Names}}\t{{.Status}}' | sort
 ```
 Expect 21 lines, all `Up`.
 
-### A.3 The two QPUs point to MQV
+### A.3 The three QPUs point to MQV
 
 Prints, for each QPU, the device ID and the MQP-API URL the site configured:
 ```bash
-for q in sc26-mqv-maqcs sc26-mqv-eqe1; do
+for q in sc26-mqv-maqcs sc26-mqv-eqe1 sc26-mqv-aws; do
   docker exec shim-head grep -A3 "^  $q:" /etc/openqse/qfw/device/device-access.yaml | grep -E "^  sc26|provider-device-id|url"
 done
 ```
-Expect `mqv.maqcs` and `mqv.eqe1`, both with `url: https://test.quantumpathway.eu:4000/v1/`.
+Expect `mqv.maqcs`, `mqv.eqe1` and `mqv.default`, all with `url: https://test.quantumpathway.eu:4000/v1/`. `mqv.default` has no fixed resource: its service gets the resource `AWS` when it starts (A.5).
 
 ### A.4 Directory service and gateway are up
 
@@ -211,7 +229,7 @@ docker exec slurmctld bash -lc 'qfw-site-services --target directory status; qfw
 ```
 Expect `Directory: UP` and `Gateway: UP`.
 
-### A.5 Start the two services with the presenter's token
+### A.5 Start the three services with the presenter's token
 
 Only needed if the services aren't running: after a restart of the testbed or of `shim-head`, after a token change, or when the dry run (A.7) fails with `403`. Services that run since the last start keep working; skip this step then.
 
@@ -220,14 +238,17 @@ Keeps the MQP-API token in a shell variable, without showing it on screen or sav
 read -rs MQV_TEST_TOKEN && export MQV_TEST_TOKEN
 ```
 
-Stops each service if it runs, and starts it again with the token (as `QFW_API_KEY`). The last line removes the token from the shell:
+Stops each service if it runs, and starts it again with the token (as `QFW_API_KEY`). The AWS service also gets its resource (`MQV_QDMI_RESOURCE=AWS`) and the form of OpenQASM 3 that SV1 accepts (`SC26_QASM3_DIALECT=braket`). The last line removes the token from the shell:
 ```bash
-for s in shim-sc26-mqv-maqcs shim-sc26-mqv-eqe1; do
+for s in shim-sc26-mqv-maqcs shim-sc26-mqv-eqe1 shim-sc26-mqv-aws; do
   echo "== $s"
+  extra=""
+  [ "$s" = shim-sc26-mqv-aws ] && extra="-e MQV_QDMI_RESOURCE=AWS -e SC26_QASM3_DIALECT=braket"
   docker exec shim-head bash -lc "source /opt/openqse/qfw/bin/qfw-activate --venv /opt/openqse/qfw-venv && qfw-qpm-svc stop --run-dir /var/lib/qfw-site-services/qpm/$s" > /dev/null 2>&1 || true
   QFW_API_KEY="$MQV_TEST_TOKEN" docker exec -w /tmp \
     -e QFW_API_KEY \
     -e SC26_PROGRAM_FORMAT=QASM3 \
+    $extra \
     -e PYTHONPATH=/workspace/qfw-container-base/sc26-wheels/site-0.1.2-b148cc2 \
     -e DEFW_EXTERNAL_SERVICES_PATH=/workspace/qfw-container-base/sc26-tools/qfw/services:/opt/openqse/qfw/lib/qfw/services \
     -e QFW_SHARED_ROOT=/workspace/qfw-container-base -e QFW_SITE_CONFIG=/etc/openqse/qfw/site.yaml \
@@ -235,7 +256,7 @@ for s in shim-sc26-mqv-maqcs shim-sc26-mqv-eqe1; do
 done
 unset MQV_TEST_TOKEN
 ```
-Expect `"state": "ready"` for both. The token now lives only in the two running services. Both services load the MQV QDMI device from `sc26-wheels/site-0.1.2-b148cc2`.
+Expect `"state": "ready"` for all three. The token now lives only in the three running services. All three load the MQV QDMI device from `sc26-wheels/site-0.1.2-b148cc2`.
 
 ### A.6 Create the user's files
 
@@ -283,10 +304,10 @@ print("EQE1 counts:", job.result().get_counts())
 EOF
 ```
 
-Writes the program for both:
+Writes the program for AWS:
 ```bash
-docker exec -i -u user-a slurmctld bash -c 'cat > /workspace/home/user-a/demo/ghz_both.py' <<'EOF'
-# The same GHZ circuit on both QPUs this job reserved: sc26-mqv-maqcs and sc26-mqv-eqe1.
+docker exec -i -u user-a slurmctld bash -c 'cat > /workspace/home/user-a/demo/ghz_aws.py' <<'EOF'
+# GHZ on the QPU sc26-mqv-aws (AWS SV1 simulator, through MQV's MQSS).
 from qiskit import QuantumCircuit
 from qfw_qiskit import QFwBackend
 
@@ -296,20 +317,17 @@ qc.cx(0, 1)
 qc.cx(1, 2)
 qc.measure_all()
 
-# One backend per reserved QPU: its service is "shim-" + the QPU name.
-maqcs = QFwBackend(provider="shim", service_id="shim-sc26-mqv-maqcs")
-eqe1 = QFwBackend(provider="shim", service_id="shim-sc26-mqv-eqe1")
+# The backend of the QPU this job reserved: its service is "shim-" + the QPU name.
+aws = QFwBackend(provider="shim", service_id="shim-sc26-mqv-aws")
 
-job_maqcs = maqcs.run(qc, shots=100)
-job_eqe1 = eqe1.run(qc, shots=100)
-print("MAQCS counts:", job_maqcs.result().get_counts())
-print("EQE1 counts:", job_eqe1.result().get_counts())
+job = aws.run(qc, shots=100)
+print("AWS counts:", job.result().get_counts())
 EOF
 ```
 
-Writes the three job scripts. They are the same text; only the job name, the `--qpu` line, the circuit count and the program differ:
+Writes the three job scripts. They are the same text; only the job name, the `--qpu` line and the program differ:
 ```bash
-make_sbatch() {  # file, job name, QPU list, circuit count, program
+make_sbatch() {  # file, job name, QPU, program
   docker exec -i -u user-a slurmctld bash -c "cat > /workspace/home/user-a/demo/$1" <<EOF
 #!/bin/bash
 #SBATCH --job-name=$2
@@ -322,7 +340,7 @@ make_sbatch() {  # file, job name, QPU list, circuit count, program
 #SBATCH --qpu=$3
 # What the job will send, so the QPU(s) can be reserved for it:
 #SBATCH --workload-kind=quantum
-#SBATCH --circ-count=$4
+#SBATCH --circ-count=1
 #SBATCH --max-qubits=3
 #SBATCH --max-depth=100
 #SBATCH --max-shots=100
@@ -336,12 +354,12 @@ mkdir -p "\$QFW_RUN_BASE_DIR"
 
 qfw-setup
 trap qfw-teardown EXIT
-qfw-srun /workspace/home/user-a/demo/$5
+qfw-srun /workspace/home/user-a/demo/$4
 EOF
 }
-make_sbatch ghz_maqcs.sbatch ghz-maqcs sc26-mqv-maqcs 1 ghz_maqcs.py
-make_sbatch ghz_eqe1.sbatch ghz-eqe1 sc26-mqv-eqe1 1 ghz_eqe1.py
-make_sbatch ghz_both.sbatch ghz-both sc26-mqv-maqcs,sc26-mqv-eqe1 2 ghz_both.py
+make_sbatch ghz_maqcs.sbatch ghz-maqcs sc26-mqv-maqcs ghz_maqcs.py
+make_sbatch ghz_eqe1.sbatch ghz-eqe1 sc26-mqv-eqe1 ghz_eqe1.py
+make_sbatch ghz_aws.sbatch ghz-aws sc26-mqv-aws ghz_aws.py
 ```
 
 Lists the folder, to check that all six files are there:
@@ -351,7 +369,9 @@ docker exec -u user-a slurmctld ls -l /workspace/home/user-a/demo
 
 ### A.7 Dry run
 
-Run Part 1, steps 1.2 and 1.5 to 1.8, once. All three cases must show their counts; if MAQCS is still blocked in MQSS (step A.1), only case 2 does. A job submitted right after a service was (re)started can hang in `PENDING`; the dry run catches that before the demo.
+Run Part 1, steps 1.2 and 1.5 to 1.8, once. All three jobs must show their counts. A job submitted right after a service was (re)started can hang in `PENDING`; the dry run catches that before the demo.
+
+If a job ends with `QDMI job.check() failed: Checking job status: A fatal error` in its `slurm-<N>.out`, submit it again. The device gave up after one status request to the MQP-API came back empty, while the job itself completed at MQV (Slurm job 44 / MQP job 170, 2026-11-11). A device fix is planned.
 
 Then delete the dry run's output files, so the folder looks clean for the demo:
 ```bash

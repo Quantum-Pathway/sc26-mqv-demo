@@ -1,6 +1,6 @@
 # MQV in openQSE: SC26 demo
 
-Material for MQV's part of the openQSE demo at SC26: a user runs quantum programs on MQV's resources MAQCS and EQE1 through openQSE.
+Material for MQV's part of the openQSE demo at SC26: a user runs quantum programs on MQV's resources MAQCS, EQE1 and AWS through openQSE.
 
 | Path | Content |
 |---|---|
